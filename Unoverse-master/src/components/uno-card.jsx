@@ -1,3 +1,4 @@
+
 "use client";
 
 import { cn } from "@/lib/utils";
@@ -39,7 +40,7 @@ const SkipIcon = ({ className }) => (
 );
 
 const Draw2Icon = ({ className }) => (
-  <span className={cn("font-bold text-lg", className)}>+2</span>
+  <span className={cn("font-bold", className)}>+2</span>
 );
 
 const WildIcon = ({ className }) => (
@@ -52,7 +53,7 @@ const WildIcon = ({ className }) => (
 );
 
 const Draw4Icon = ({ className }) => (
-  <span className={cn("font-black text-white text-lg", className)}>+4</span>
+  <span className={cn("font-black text-white", className)}>+4</span>
 );
 
 
@@ -61,12 +62,12 @@ export function UnoCard({ card, className, isPlayable, ...props }) {
     return (
       <div
         className={cn(
-          "w-24 h-36 md:w-28 md:h-44 bg-zinc-800 rounded-xl p-2 flex items-center justify-center border-4 border-zinc-300 shadow-lg",
+          "w-20 h-32 sm:w-24 sm:h-36 md:w-28 md:h-44 bg-zinc-800 rounded-lg sm:rounded-xl p-2 flex items-center justify-center border-2 sm:border-4 border-zinc-300 shadow-lg",
           className
         )}
         {...props}
       >
-        <h1 className="text-white font-bold text-3xl transform -rotate-12 select-none">UNO</h1>
+        <h1 className="text-white font-bold text-2xl sm:text-3xl transform -rotate-12 select-none">UNO</h1>
       </div>
     );
   }
@@ -80,15 +81,15 @@ export function UnoCard({ card, className, isPlayable, ...props }) {
   };
 
   const renderValue = (isCenter) => {
-    const size = isCenter ? "w-10 h-10" : "w-5 h-5";
+    const size = isCenter ? "w-8 h-8 sm:w-10 sm:h-10" : "w-4 h-4 sm:w-5 sm:h-5";
     const iconClassName = `text-white ${size}`;
-    const textClassName = `font-bold text-white ${isCenter ? 'text-5xl' : 'text-xl'}`;
+    const textClassName = `font-bold text-white ${isCenter ? 'text-4xl sm:text-5xl' : 'text-lg sm:text-xl'}`;
 
     switch (card.value) {
       case "skip": return <SkipIcon className={iconClassName} />;
       case "reverse": return <ReverseIcon className={iconClassName} />;
       case "draw2": return <Draw2Icon className={textClassName} />;
-      case "wild": return <WildIcon className="w-12 h-12 rounded-full overflow-hidden"/>;
+      case "wild": return <WildIcon className="w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden"/>;
       case "wild_draw4": return <Draw4Icon className={textClassName} />;
       default: return <span className={textClassName}>{card.value}</span>;
     }
@@ -99,8 +100,8 @@ export function UnoCard({ card, className, isPlayable, ...props }) {
   return (
     <div
       className={cn(
-        "w-24 h-36 md:w-28 md:h-44 rounded-xl p-1.5 bg-white shadow-lg transition-all duration-300",
-        isPlayable && "cursor-pointer hover:-translate-y-4 hover:shadow-2xl",
+        "w-20 h-32 sm:w-24 sm:h-36 md:w-28 md:h-44 rounded-lg sm:rounded-xl p-1 sm:p-1.5 bg-white shadow-lg transition-all duration-300",
+        isPlayable && "cursor-pointer hover:shadow-2xl hover:scale-105",
         isPlayable === false && "opacity-70 cursor-not-allowed",
         className
       )}
@@ -108,14 +109,14 @@ export function UnoCard({ card, className, isPlayable, ...props }) {
     >
       <div
         className={cn(
-          "w-full h-full rounded-lg flex items-center justify-center relative overflow-hidden",
+          "w-full h-full rounded-md sm:rounded-lg flex items-center justify-center relative overflow-hidden",
           cardColorMap[card.color]
         )}
       >
          {!isWild && (
           <>
-            <div className="absolute top-2 left-2">{renderValue(false)}</div>
-            <div className="absolute bottom-2 right-2 transform rotate-180">{renderValue(false)}</div>
+            <div className="absolute top-1 left-1 sm:top-2 sm:left-2">{renderValue(false)}</div>
+            <div className="absolute bottom-1 right-1 sm:bottom-2 sm:right-2 transform rotate-180">{renderValue(false)}</div>
           </>
         )}
         
@@ -125,11 +126,11 @@ export function UnoCard({ card, className, isPlayable, ...props }) {
         </div>
 
         {isWild && card.value === "wild_draw4" &&
-            <div className="absolute bottom-3 right-3 flex gap-0.5">
-                <div className="w-4 h-4 rounded-sm bg-blue-500 border-2 border-white/50"></div>
-                <div className="w-4 h-4 rounded-sm bg-red-500 border-2 border-white/50 -translate-y-1"></div>
-                <div className="w-4 h-4 rounded-sm bg-yellow-400 border-2 border-white/50"></div>
-                <div className="w-4 h-4 rounded-sm bg-green-500 border-2 border-white/50 -translate-y-1"></div>
+            <div className="absolute bottom-2 right-2 flex gap-0.5">
+                <div className="w-3 h-3 sm:w-4 sm:h-4 rounded-sm bg-blue-500 border border-white/50"></div>
+                <div className="w-3 h-3 sm:w-4 sm:h-4 rounded-sm bg-red-500 border border-white/50 -translate-y-0.5 sm:-translate-y-1"></div>
+                <div className="w-3 h-3 sm:w-4 sm:h-4 rounded-sm bg-yellow-400 border border-white/50"></div>
+                <div className="w-3 h-3 sm:w-4 sm:h-4 rounded-sm bg-green-500 border border-white/50 -translate-y-0.5 sm:-translate-y-1"></div>
             </div>
         }
       </div>

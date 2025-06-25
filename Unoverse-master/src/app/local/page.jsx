@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Suspense, useState, useEffect } from "react";
@@ -11,14 +10,17 @@ function LocalGame() {
   const searchParams = useSearchParams();
   const [gameState, setGameState] = useState(null);
 
+  // Get stable primitive values from searchParams
+  const name = searchParams.get("name") || "You";
+  const botsParam = searchParams.get("bots") || "3";
+
   useEffect(() => {
-    const name = searchParams.get("name") || "You";
-    const bots = parseInt(searchParams.get("bots") || "3", 10);
-    const numBots = Math.max(1, Math.min(5, bots));
+    // This effect now safely runs only when name or botsParam change.
+    const parsedBots = parseInt(botsParam, 10);
+    const numBots = Math.max(1, Math.min(5, isNaN(parsedBots) ? 3 : parsedBots));
     
-    // Generate game state only on the client side to prevent hydration mismatch
     setGameState(createLocalGame(name, numBots));
-  }, [searchParams]);
+  }, [name, botsParam]);
 
   if (!gameState) {
     return <LoadingFallback />;

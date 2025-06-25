@@ -52,22 +52,31 @@ const dealCards = (deck, numPlayers, cardsPerPlayer) => {
  * @returns {import('./types').GameState}
  */
 export const createLocalGame = (playerName, numBots) => {
-    const fullDeck = createDeck();
-    const shuffledDeck = shuffleDeck([...fullDeck]);
-    
+    let firstCard;
+    let remainingDeck;
+    let hands;
     const numPlayers = 1 + numBots;
-    const { hands, remainingDeck } = dealCards([...shuffledDeck], numPlayers, 7);
 
-    let firstCardIndex = remainingDeck.length - 1;
-    while (remainingDeck[firstCardIndex].color === 'wild') {
-        firstCardIndex--;
-        if (firstCardIndex < 0) { // Safety check if deck is all wild cards
-            const newDeck = createDeck();
-            const newShuffled = shuffleDeck([...newDeck]);
-            return createLocalGame(playerName, numBots); // Recurse, very unlikely
+    // This loop prevents a potential infinite recursion if the deck runs out of non-wild cards
+    while (true) {
+        const fullDeck = createDeck();
+        const shuffledDeck = shuffleDeck([...fullDeck]);
+        
+        const dealt = dealCards([...shuffledDeck], numPlayers, 7);
+        hands = dealt.hands;
+        let deckForFindingFirstCard = dealt.remainingDeck;
+        
+        let firstCardIndex = deckForFindingFirstCard.length - 1;
+        while (firstCardIndex >= 0 && deckForFindingFirstCard[firstCardIndex].color === 'wild') {
+            firstCardIndex--;
+        }
+
+        if (firstCardIndex >= 0) {
+            firstCard = deckForFindingFirstCard.splice(firstCardIndex, 1)[0];
+            remainingDeck = deckForFindingFirstCard;
+            break; // Found a valid starting card, exit the loop
         }
     }
-    const firstCard = remainingDeck.splice(firstCardIndex, 1)[0];
 
     const players = [
         { id: "player-1", name: playerName, isHost: true, cards: hands[0] },
@@ -78,15 +87,18 @@ export const createLocalGame = (playerName, numBots) => {
         players.push({ id: `player-${i+2}`, name: botNames[i % botNames.length], isHost: false, cards: hands[i+1] });
     }
 
+    const startingPlayerIndex = Math.floor(Math.random() * numPlayers);
+
     return {
         id: "uno-local-game",
         players,
-        currentPlayerIndex: 0,
+        currentPlayerIndex: startingPlayerIndex,
         discardPile: [firstCard],
         drawPile: remainingDeck,
         isClockwise: true,
         gameWinner: null,
         chosenColor: null,
+        pendingDrawAmount: 0,
     };
 };
 
@@ -95,36 +107,48 @@ export const createLocalGame = (playerName, numBots) => {
  * @returns {Omit<import('./types').GameState, 'id'>}
  */
 export const createOnlineGameFromPlayers = (players) => {
-    const fullDeck = createDeck();
-    const shuffledDeck = shuffleDeck([...fullDeck]);
-    
+    let firstCard;
+    let remainingDeck;
+    let hands;
     const numPlayers = players.length;
-    const { hands, remainingDeck } = dealCards([...shuffledDeck], numPlayers, 7);
 
-    let firstCardIndex = remainingDeck.length - 1;
-    while (remainingDeck[firstCardIndex].color === 'wild') {
-        firstCardIndex--;
-        if (firstCardIndex < 0) { 
-            const newDeck = createDeck();
-            const newShuffled = shuffleDeck([...newDeck]);
-            // This is problematic in a real app, but for now...
-            return createOnlineGameFromPlayers(players);
+    // This loop prevents a potential infinite recursion if the deck runs out of non-wild cards
+    while (true) {
+        const fullDeck = createDeck();
+        const shuffledDeck = shuffleDeck([...fullDeck]);
+        
+        const dealt = dealCards([...shuffledDeck], numPlayers, 7);
+        hands = dealt.hands;
+        let deckForFindingFirstCard = dealt.remainingDeck;
+
+        let firstCardIndex = deckForFindingFirstCard.length - 1;
+        while (firstCardIndex >= 0 && deckForFindingFirstCard[firstCardIndex].color === 'wild') {
+            firstCardIndex--;
+        }
+        
+        if (firstCardIndex >= 0) {
+            firstCard = deckForFindingFirstCard.splice(firstCardIndex, 1)[0];
+            remainingDeck = deckForFindingFirstCard;
+            break; // Found a valid starting card, exit the loop
         }
     }
-    const firstCard = remainingDeck.splice(firstCardIndex, 1)[0];
+
 
     const updatedPlayers = players.map((player, index) => ({
         ...player,
         cards: hands[index]
     }));
 
+    const startingPlayerIndex = Math.floor(Math.random() * numPlayers);
+
     return {
         players: updatedPlayers,
-        currentPlayerIndex: 0,
+        currentPlayerIndex: startingPlayerIndex,
         discardPile: [firstCard],
         drawPile: remainingDeck,
         isClockwise: true,
         gameWinner: null,
         chosenColor: null,
+        pendingDrawAmount: 0,
     };
 };

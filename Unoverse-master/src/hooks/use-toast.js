@@ -1,3 +1,4 @@
+
 "use client"
 
 // Inspired by react-hot-toast library
@@ -57,8 +58,6 @@ export const reducer = (state, action) => {
     case "DISMISS_TOAST": {
       const { toastId } = action
 
-      // ! Side effects ! - This could be extracted into a dismissToast() action,
-      // but I'll keep it here for simplicity
       if (toastId) {
         addToRemoveQueue(toastId)
       } else {
@@ -90,18 +89,23 @@ export const reducer = (state, action) => {
         ...state,
         toasts: state.toasts.filter((t) => t.id !== action.toastId),
       }
+    default:
+        return state;
   }
 }
 
 const listeners = []
 
-let memoryState = { toasts: [] }
+// The initial state should be a constant to avoid re-renders on the server.
+const INITIAL_STATE = { toasts: [] }
+
+let memoryState = INITIAL_STATE
 
 function dispatch(action) {
   memoryState = reducer(memoryState, action)
-  listeners.forEach((listener) => {
+  for (const listener of listeners) {
     listener(memoryState)
-  })
+  }
 }
 
 function toast({ ...props }) {
@@ -134,17 +138,19 @@ function toast({ ...props }) {
 }
 
 function useToast() {
-  const [state, setState] = React.useState(memoryState)
-
-  React.useEffect(() => {
-    listeners.push(setState)
-    return () => {
-      const index = listeners.indexOf(setState)
-      if (index > -1) {
-        listeners.splice(index, 1)
+  const state = React.useSyncExternalStore(
+    (listener) => {
+      listeners.push(listener)
+      return () => {
+        const index = listeners.indexOf(listener)
+        if (index > -1) {
+          listeners.splice(index, 1)
+        }
       }
-    }
-  }, [state])
+    },
+    () => memoryState,
+    () => INITIAL_STATE // Use the constant initial state for the server snapshot
+  )
 
   return {
     ...state,

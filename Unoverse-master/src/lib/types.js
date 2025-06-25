@@ -31,6 +31,7 @@
  * @property {boolean} isClockwise
  * @property {Player | null} gameWinner
  * @property {CardColor | null} chosenColor
+ * @property {number} [pendingDrawAmount]
  */
 
 // This file is for JSDoc type definitions.
